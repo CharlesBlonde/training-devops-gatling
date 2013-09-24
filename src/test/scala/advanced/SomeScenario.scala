@@ -1,70 +1,98 @@
 package advanced
+
 import io.gatling.core.Predef._
+import io.gatling.core.session.Session
 import io.gatling.http.Predef._
 import Headers._
+import io.gatling.http.request.StringBody
 import scala.concurrent.duration._
 import bootstrap._
+import assertions._
 
 object SomeScenario {
 
-	val scn = scenario("Scenario name")
-		.exec(
-			http("request_1")
-				.get("/")
-				.headers(headers_1)
-				.check(status.is(302)))
-		.pause(0 milliseconds, 100 milliseconds)
-		.exec(
-			http("request_2")
-				.get("/public/login.html")
-				.headers(headers_1))
-		.pause(12, 13)
-		.feed(csv("user_credentials.csv"))
-		.exec(
-			http("request_3")
-				.post("/login")
-				.param("username", "${username}")
-				.param("password", "${password}")
-				.headers(headers_3)
-				.check(status.is(302)))
-		.pause(0 milliseconds, 100 milliseconds)
-		.repeat(5) {
-			exec(
-				http("request_4")
-					.get("/private/bank/accounts.html")
-					.headers(headers_1)
-					.check(regex("""<td class="number">ACC(\d+)</td>""").saveAs("account_id")))
-				.pause(7, 8)
-				.exec(
-					http("request_5")
-						.get("/private/bank/account/ACC${account_id}/operations.html")
-						.headers(headers_1))
-				.pause(100 milliseconds, 200 milliseconds)
-				.exec(
-					http("request_6")
-						.get("/private/bank/account/ACC${account_id}/year/2011/month/12/page/0/operations.json")
-						.headers(headers_6))
-				.pause(4, 5)
-				.exec(
-					http("request_7")
-						.get("/private/bank/account/ACC${account_id}/year/2011/month/11/operations.html")
-						.headers(headers_1))
-				.pause(100 milliseconds, 200 milliseconds)
-				.exec(
-					http("request_8")
-						.get("/private/bank/account/ACC${account_id}/year/2011/month/11/page/0/operations.json")
-						.headers(headers_8))
-				.pause(6, 7)
-		}
-		.doIf(session => session("username") != "user7") {
-			exec(
-				http("request_9")
-					.get("/logout")
-					.headers(headers_1)
-					.check(status.is(302)))
-				.pause(0 milliseconds, 100 milliseconds)
-				.exec(http("request_10")
-					.get("/public/login.html")
-					.headers(headers_1))
-		}
+  val scn = {
+    scenario("Customer")
+      .exec(
+      http("GetCustomer")
+        .post("/services/v1.0/customerService")
+        .body(StringBody( s"""
+  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://ws.xebia.fr/customer/v1_0">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:getCustomer>
+         <v1:id>2</v1:id>
+      </v1:getCustomer>
+   </soapenv:Body>
+</soapenv:Envelope>"""))
+        .check(status.is(200))
+    ).exec(
+      http("zeNoisyOperation")
+        .post("/services/v1.0/customerService")
+        .body(StringBody( s"""<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://ws.xebia.fr/customer/v1_0">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:zeNoisyOperation>
+         <v1:id>5</v1:id>
+      </v1:zeNoisyOperation>
+   </soapenv:Body>
+</soapenv:Envelope>
+     """))
+
+    ).exec(
+      http("zeSlowOperation")
+        .post("/services/v1.0/customerService")
+        .body(StringBody( s"""<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://ws.xebia.fr/customer/v1_0">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:zeSlowOperation>
+         <v1:id>1</v1:id>
+      </v1:zeSlowOperation>
+   </soapenv:Body>
+</soapenv:Envelope>
+     """))
+
+    ).exec(
+      http("zeVerySlowAggregatingOperation")
+        .post("/services/v1.0/customerService")
+        .body(StringBody( s"""<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://ws.xebia.fr/customer/v1_0">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:zeVerySlowAggregatingOperation>
+         <v1:id>1</v1:id>
+      </v1:zeVerySlowAggregatingOperation>
+   </soapenv:Body>
+</soapenv:Envelope>
+     """))
+
+    ).exec(
+      http("zeJmsOperation")
+        .post("/services/v1.0/customerService")
+        .body(StringBody( s"""<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://ws.xebia.fr/customer/v1_0">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:zeJmsOperation>
+         <v1:in>1</v1:in>
+      </v1:zeJmsOperation>
+   </soapenv:Body>
+</soapenv:Envelope>
+     """))
+
+    ).exec(
+      http("zeBuggyOperation")
+        .post("/services/v1.0/customerService")
+        .body(StringBody( s"""<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://ws.xebia.fr/customer/v1_0">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:zeBuggyOperation>
+         <v1:id>1</v1:id>
+      </v1:zeBuggyOperation>
+   </soapenv:Body>
+</soapenv:Envelope>
+     """))
+
+    )
+
+  }
+
 }
