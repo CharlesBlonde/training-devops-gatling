@@ -3,7 +3,6 @@ package advanced
 import io.gatling.core.Predef._
 import io.gatling.core.session.Session
 import io.gatling.http.Predef._
-import Headers._
 import io.gatling.http.request.StringBody
 import scala.concurrent.duration._
 import bootstrap._
