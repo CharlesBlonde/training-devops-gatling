@@ -12,7 +12,8 @@ import scala.sys.SystemProperties
 
 class AdvancedExampleSimulation extends Simulation {
 
-	val httpConf = http.baseURL("http://localhost:8080").baseHeaders(Map("Authorization" -> "Basic YWRtaW46YWRtaW4="))
+  val url:String = System.getProperty("scenario.url","http://localhost:8080")
+	val httpConf = http.baseURL(url).baseHeaders(Map("Authorization" -> "Basic YWRtaW46YWRtaW4="))
   val durationStr:String = System.getProperty("scenario.duration","10")
   val userRate:String = System.getProperty("scenario.rate","1")
 
