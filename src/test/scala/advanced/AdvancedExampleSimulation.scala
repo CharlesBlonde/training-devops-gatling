@@ -13,12 +13,14 @@ import scala.sys.SystemProperties
 class AdvancedExampleSimulation extends Simulation {
 
   val url:String = System.getProperty("scenario.url","http://localhost:8080")
-	val httpConf = http.baseURL(url).baseHeaders(Map("Authorization" -> "Basic YWRtaW46YWRtaW4="))
+	val httpConf = http.baseURL(url).baseHeaders(Map())
   val durationStr:String = System.getProperty("scenario.duration","10")
-  val userRate:String = System.getProperty("scenario.rate","1")
+  val users:String = System.getProperty("scenario.users","10")
 
 	setUp(
-		SomeScenario.scn.inject(constantRate(userRate.toInt usersPerSec) during (durationStr.toInt minutes))
+		MyAnonymousScenario.scn.inject(ramp(users.toInt users) over (durationStr.toInt minutes)
+      ,ramp((users.toInt*3) users) over (durationStr.toInt minutes)
+      //,atOnce(50 users)
+    )
   ).protocols(httpConf)
-		//SomeOtherScenario.otherScn.inject(nothingFor(30 seconds), ramp(5 users) over(20 seconds)).protocolConfig(httpConf))
 }
